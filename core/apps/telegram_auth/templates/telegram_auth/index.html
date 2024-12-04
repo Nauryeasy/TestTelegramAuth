@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Telegram Auth</title>
+    <script>
+        // Функция для периодического запроса
+        async function checkTelegramUser() {
+            const token = "{{ token }}";  // Токен передается из контекста
+            const url = `http://localhost:8000/api/v1/telegram_user/?token=${token}`;
+
+            try {
+                const response = await fetch(url);
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Вывод данных пользователя
+                    document.getElementById('result').innerHTML = `
+                        <p>Telegram ID: ${data.telegram_id}</p>
+                        <p>Username: ${data.telegram_username}</p>
+                        <p>First Name: ${data.telegram_first_name}</p>
+                        <p>Last Name: ${data.telegram_last_name || 'N/A'}</p>
+                    `;
+
+                    // Остановка периодических запросов
+                    clearInterval(checkInterval);
+                } else if (response.status === 404) {
+                    console.log('Пользователь не найден, продолжаем проверять...');
+                }
+            } catch (error) {
+                console.error('Ошибка при запросе:', error);
+            }
+        }
+
+        // Запуск функции с интервалом 3 секунды
+        const checkInterval = setInterval(checkTelegramUser, 3000);
+    </script>
+</head>
+<body>
+    <a href="{{ telegram_auth_url }}" target="_blank">
+        <button>Войти через Telegram</button>
+    </a>
+    <div id="result">
+        <p>Ожидание авторизации...</p>
+    </div>
+</body>
+</html>

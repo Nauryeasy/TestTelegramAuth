@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  main-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: main-app
+    ports:
+      - "${DJANGO_PORT}:8000"
+    command: "sh /entrypoint.sh"
+    env_file:
+      - ../.env
+    depends_on:
+      - postgres
+    volumes:
+      - ..:/app/
+    networks:
+      - telegram_auth_network
+
+  telegram_bot:
+    build:
+      context: ..
+      dockerfile: Dockerfile.bot
+    container_name: telegram_bot
+    env_file:
+      - ../.env
+    depends_on:
+      - postgres
+    volumes:
+      - ../bot/:/app/
+    networks:
+      - telegram_auth_network
+
+networks:
+  telegram_auth_network:
+    driver: bridge

@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ../.env
+    networks:
+      - telegram_auth_network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+      - telegram_auth_network
+
+  redis:
+    image: "redis:alpine"
+    container_name: redis
+    ports:
+      - "6378:${REDIS_PORT}"  # not canonical local redic  port)))  ### I got this comment from my colleague, I don't know why he decided to do this xD
+    networks:
+      - telegram_auth_network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:${REDIS_HOST}:${REDIS_PORT}
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - telegram_auth_network
+
+volumes:
+  postgres_data:
+
+networks:
+  telegram_auth_network:
+    driver: bridge
+

@@ -1,0 +1,3 @@
+__pycache__/
+.env
+core/project/settings/local.py
